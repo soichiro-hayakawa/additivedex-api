@@ -21,11 +21,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    // req.bodyが文字列の場合はパース
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    // req.bodyがBuffer/Stream/文字列のいずれでも対応
+    let body = req.body;
+    if (Buffer.isBuffer(body)) {
+      body = JSON.parse(body.toString("utf8"));
+    } else if (typeof body === "string") {
+      body = JSON.parse(body);
+    }
+    // オブジェクトでない場合（undefined等）はエラー
+    if (!body || typeof body !== "object") {
+      return res.status(400).json({ error: "Invalid request body" });
+    }
 
-    // base64画像の data:...;base64, プレフィックスをサーバー側でも除去（iOS Safari対策）
-    if (Array.isArray(body?.messages)) {
+    // base64画像の data:...;base64, プレフィックスをサーバー側でも除去
+    if (Array.isArray(body.messages)) {
       for (const msg of body.messages) {
         if (!Array.isArray(msg.content)) continue;
         for (const block of msg.content) {
