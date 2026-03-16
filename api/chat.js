@@ -21,6 +21,26 @@ export default async function handler(req, res) {
   }
 
   try {
+    // req.bodyが文字列の場合はパース
+    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+
+    // base64画像の data:...;base64, プレフィックスをサーバー側でも除去（iOS Safari対策）
+    if (Array.isArray(body?.messages)) {
+      for (const msg of body.messages) {
+        if (!Array.isArray(msg.content)) continue;
+        for (const block of msg.content) {
+          if (
+            block.type === "image" &&
+            block.source?.type === "base64" &&
+            typeof block.source.data === "string" &&
+            block.source.data.includes(",")
+          ) {
+            block.source.data = block.source.data.split(",").pop();
+          }
+        }
+      }
+    }
+
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -28,7 +48,7 @@ export default async function handler(req, res) {
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(body),
     });
 
     const data = await response.json();
