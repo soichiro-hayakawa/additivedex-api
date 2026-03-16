@@ -1,0 +1,6 @@
+{
+  "name": "additivedex-api",
+  "version": "1.0.0",
+  "description": "Vercel serverless API proxy for AdditiveDEX",
+  "private": true
+}
