@@ -1,4 +1,4 @@
-const ALLOWED_ORIGIN = "https://soichiro-hayakawa.github.io";
+const ALLOWED_ORIGIN = "https://additivedex.com";
 
 export default async function handler(req, res) {
   // CORSプリフライト対応
